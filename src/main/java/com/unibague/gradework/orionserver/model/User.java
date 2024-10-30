@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User
 {
     private Long idUser;
