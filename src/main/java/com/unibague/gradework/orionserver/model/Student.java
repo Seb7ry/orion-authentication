@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@Builder
+//@Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Student extends User
