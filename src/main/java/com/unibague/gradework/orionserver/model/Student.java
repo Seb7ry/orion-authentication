@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
+@Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Student extends User
 {
     private Long idStudent;
