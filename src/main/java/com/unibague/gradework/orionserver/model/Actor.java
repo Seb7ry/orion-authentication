@@ -1,17 +1,18 @@
 package com.unibague.gradework.orionserver.model;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Actors
+@SuperBuilder
+@Entity
+public class Actor extends User
 {
-    private Long idActor;
-    private Program program;
+    private String program;
     private String position;
 }

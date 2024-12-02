@@ -1,19 +1,21 @@
 package com.unibague.gradework.orionserver.model;
 
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
+@Entity
 public class Student extends User
 {
-    private Long idStudent;
     private boolean status;
     private int semester;
     private String category;
-    private Program program;
+    private String program;
 }
