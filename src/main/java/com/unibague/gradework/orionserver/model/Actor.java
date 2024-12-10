@@ -1,18 +1,20 @@
 package com.unibague.gradework.orionserver.model;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Entity
-public class Actor extends User
-{
+@Document(collection = "actors")
+public class Actor extends User {
+    private Long employeeId;
     private String program;
     private String position;
 }
