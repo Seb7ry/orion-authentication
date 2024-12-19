@@ -4,14 +4,29 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
+/**
+ * Represents a login request containing the necessary credentials and role information.
+ * This class is used for authentication purposes, encapsulating the user's email, password, and role.
+ */
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LoginRequest {
+
+    /**
+     * The email address of the user attempting to log in.
+     */
     private String email;
+
+    /**
+     * The password associated with the user's account.
+     */
     private String password;
+
+    /**
+     * The role of the user attempting to log in (e.g., "Admin", "Actor", or "Student").
+     */
     private String role;
 }

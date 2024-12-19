@@ -1,8 +1,6 @@
 package com.unibague.gradework.orionserver.controller;
 
-import com.unibague.gradework.orionserver.model.Actor;
 import com.unibague.gradework.orionserver.model.LoginRequest;
-import com.unibague.gradework.orionserver.model.Student;
 import com.unibague.gradework.orionserver.model.User;
 import com.unibague.gradework.orionserver.repository.ActorRepository;
 import com.unibague.gradework.orionserver.repository.StudentRepository;
@@ -19,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+/**
+ * Controller responsible for handling authentication-related endpoints.
+ * Provides login and logout functionalities.
+ */
 @RestController
 @RequestMapping("/authenticate")
 @RequiredArgsConstructor
@@ -39,46 +41,46 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * Authenticates a user and generates a JWT token if credentials are valid.
+     *
+     * @param loginRequest the {@link LoginRequest} containing the user's email, password, and role.
+     * @return a JWT token as a {@link String}.
+     * @throws RuntimeException if the user is not found or credentials are invalid.
+     */
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest) {
-        // Buscar en la colección "users"
         Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
 
-        // Si no se encuentra en la colección "users", buscar en "students"
         if (user.isEmpty()) {
             user = studentRepository.findByEmail(loginRequest.getEmail())
-                    .map(student -> (User) student); // Convertir Optional<Student> a Optional<User>
+                    .map(student -> (User) student);
         }
 
-        // Si no se encuentra en "students", buscar en "actors"
         if (user.isEmpty()) {
             user = actorRepository.findByEmail(loginRequest.getEmail())
-                    .map(actor -> (User) actor); // Convertir Optional<Actor> a Optional<User>
+                    .map(actor -> (User) actor);
         }
 
-        // Si sigue vacío, lanzar excepción
         if (user.isEmpty()) {
-            throw new RuntimeException("Usuario no encontrado");
+            throw new RuntimeException("User not found");
         }
 
-        // Verificar contraseña
-        //if (!passwordEncoder.matches(loginRequest.getPassword(), user.get().getPassword())) {
-        //    throw new RuntimeException("Credenciales inválidas");
-        //}
+        User userEntity = user.orElseThrow(() -> new RuntimeException("User not found"));
 
-        User userEntity = user.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Verificar contraseña sin encriptar (temporal)
         if (!loginRequest.getPassword().equals(userEntity.getPassword())) {
-            throw new RuntimeException("Credenciales inválidas");
+            throw new RuntimeException("Invalid credentials");
         }
 
-        // Generar token
-        String token = jwtService.generateToken(user.get().getEmail(), loginRequest.getRole());
+        String token = jwtService.generateToken(userEntity.getEmail(), loginRequest.getRole());
         return token;
     }
 
-
+    /**
+     * Logs out the user by clearing the security context.
+     *
+     * @return a {@link String} indicating a successful logout.
+     */
     @PostMapping("/logout")
     public String logout() {
         SecurityContextHolder.clearContext();
