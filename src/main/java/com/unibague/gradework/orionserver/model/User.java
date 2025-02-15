@@ -1,5 +1,6 @@
 package com.unibague.gradework.orionserver.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.unibague.gradework.orionserver.enumerator.TypeSex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Represents a User entity in the system.
@@ -42,12 +44,13 @@ public class User {
     /**
      * The birth date of the user.
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     /**
      * The user's phone number.
      */
-    private int phone;
+    private String phone;
 
     /**
      * The email address of the user.
@@ -74,4 +77,19 @@ public class User {
      */
     @DBRef
     private Role role;
+
+    /**
+     * List of program IDs associated with the user.
+     *
+     * This field stores references to programs that the user is enrolled in or affiliated with.
+     * Instead of using @DBRef, only the program IDs are stored as Strings to avoid unnecessary
+     * complexity and improve performance in MongoDB queries.
+     *
+     * Example:
+     * - A student may be enrolled in multiple programs.
+     * - An actor (employee) may be assigned to different programs.
+     *
+     * The IDs stored in this list should correspond to valid entries in the "programs" collection.
+     */
+    private List<String> programId;
 }

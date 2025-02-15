@@ -1,5 +1,6 @@
 package com.unibague.gradework.orionserver.service;
 
+import com.unibague.gradework.orionserver.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -41,17 +42,13 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    /**
-     * Generates a JWT for a given email and role.
-     *
-     * @param email the email of the user.
-     * @param role  the role assigned to the user.
-     * @return a signed JWT as a {@link String}.
-     */
-    public String generateToken(String email, String role) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(email)
-                .claim("role", role)
+                .setSubject(user.getEmail()) // Usamos el email como "subject"
+                .claim("idUser", user.getIdUser()) // ID del usuario
+                .claim("role", user.getRole().getName()) // Nombre del rol
+                .claim("firstName", user.getFirstName()) // Nombre del usuario
+                .claim("lastName", user.getLastName()) // Apellido
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
