@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service class responsible for handling authentication logic.
+ * It verifies user credentials, retrieves user details, and generates JWT tokens.
+ */
 @Service
 public class AuthService implements IAuthService{
 
@@ -22,6 +26,13 @@ public class AuthService implements IAuthService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * Authenticates a user by validating credentials and generating a JWT token.
+     *
+     * @param loginRequest The login request containing the user's email and password.
+     * @return A {@link ResponseEntity} containing an authentication response if successful,
+     * or an error message in case of failure.
+     */
     @Override
     public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
         Optional<User> userOptional = userService.fetchUserByEmail(loginRequest.getEmail());
@@ -33,22 +44,13 @@ public class AuthService implements IAuthService{
 
         User user = userOptional.get();
 
-        // Comparación de contraseñas en texto plano (temporalmente, hasta usar BCrypt)
         if (!loginRequest.getPassword().equals(user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid email or password");
         }
 
-        // Validar que el rol coincida con el del usuario
-        if (!user.getRole().getName().equalsIgnoreCase(loginRequest.getRole())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid role. Expected: " + user.getRole().getName());
-        }
-
-        // Obtener programas del usuario
         List<ProgramDTO> programs = userService.fetchUserPrograms(user.getIdUser());
 
-        // Convertir a DTO correcto
         Object userDTO;
         if (user instanceof Student student) {
             userDTO = new StudentDTO(
@@ -87,7 +89,6 @@ public class AuthService implements IAuthService{
                     .body("User type not recognized");
         }
 
-        // Generar token
         String token = jwtService.generateToken(user);
 
         AuthResponse response = AuthResponse.builder()

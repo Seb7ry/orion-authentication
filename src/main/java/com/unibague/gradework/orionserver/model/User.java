@@ -43,6 +43,7 @@ public class User {
 
     /**
      * The birth date of the user.
+     * This field is formatted as a string in the "yyyy-MM-dd" pattern when serialized to JSON.
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthDate;

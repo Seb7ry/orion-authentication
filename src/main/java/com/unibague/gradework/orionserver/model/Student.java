@@ -23,7 +23,7 @@ public class Student extends User {
     /**
      * The unique identifier for the student.
      */
-    private Long studentID;
+    private String studentID;
 
     /**
      * The status of the student, indicating if they are active or inactive.

@@ -35,15 +35,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disables CSRF protection.
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/authenticate/**").permitAll() // Public endpoints.
-                        .requestMatchers("/student/**").hasRole("Student") // Restricted to "Student" role.
-                        .requestMatchers("/actors/**").hasRole("Actor") // Restricted to "Actor" role.
-                        .anyRequest().authenticated() // All other requests require authentication.
+                        .requestMatchers("/authenticate/**").permitAll()
+                        .requestMatchers("/student/**").hasRole("Student")
+                        .requestMatchers("/actors/**").hasRole("Actor")
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder()))); // Configures JWT as the resource server authentication mechanism.
+                        .jwt(jwt -> jwt.decoder(jwtDecoder())));
         return http.build();
     }
 

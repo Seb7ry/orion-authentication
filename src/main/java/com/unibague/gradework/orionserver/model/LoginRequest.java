@@ -24,9 +24,4 @@ public class LoginRequest {
      * The password associated with the user's account.
      */
     private String password;
-
-    /**
-     * The role of the user attempting to log in (e.g., "Admin", "Actor", or "Student").
-     */
-    private String role;
 }
