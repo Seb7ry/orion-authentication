@@ -4,51 +4,35 @@ import com.unibague.gradework.orionserver.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 /**
- * Service for handling JSON Web Token (JWT) operations such as token generation, validation,
- * and claims extraction. This class is essential for implementing authentication and authorization.
+ * Service for handling JWT generation, validation, and claims extraction.
  */
 @Service
-@RequiredArgsConstructor
 public class JwtService {
 
-    /**
-     * The secret key used for signing JWTs.
-     * Retrieved from the application's configuration properties.
-     */
     @Value("${jwt.secret}")
     private String secretKey;
 
-    /**
-     * The token expiration time in milliseconds.
-     * Retrieved from the application's configuration properties.
-     */
     @Value("${jwt.token.expiration}")
     private long expirationTime;
 
     /**
-     * Retrieves the signing key used to sign and verify JWTs.
-     *
-     * @return a {@link Key} object derived from the secret key.
+     * Generates a JWT token for the authenticated user.
      */
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
-
     public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail()) // Usamos el email como "subject"
-                .claim("idUser", user.getIdUser()) // ID del usuario
-                .claim("role", user.getRole().getName()) // Nombre del rol
-                .claim("firstName", user.getFirstName()) // Nombre del usuario
-                .claim("lastName", user.getLastName()) // Apellido
+                .setSubject(user.getEmail())
+                .claim("idUser", user.getIdUser())
+                .claim("role", user.getRole().getName())
+                .claim("firstName", user.getFirstName())
+                .claim("lastName", user.getLastName())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
@@ -56,12 +40,38 @@ public class JwtService {
     }
 
     /**
-     * Extracts all claims from a given JWT.
-     *
-     * @param token the JWT to extract claims from.
-     * @return a {@link Claims} object containing the token's claims.
+     * Validates a JWT token.
      */
-    public Claims extractAllClaims(String token) {
+    public boolean isTokenValid(String token, String email) {
+        return extractEmail(token).equals(email) && !isTokenExpired(token);
+    }
+
+    /**
+     * Extracts the email from the JWT token.
+     */
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * Extracts the role from the JWT token.
+     */
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    /**
+     * Extracts claims using a custom function.
+     */
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    /**
+     * Parses and retrieves all claims from a JWT.
+     */
+    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -70,34 +80,16 @@ public class JwtService {
     }
 
     /**
-     * Extracts the role claim from a given JWT.
-     *
-     * @param token the JWT to extract the role from.
-     * @return the role as a {@link String}.
-     */
-    public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
-    }
-
-    /**
-     * Validates a JWT by checking its email claim and expiration status.
-     *
-     * @param token the JWT to validate.
-     * @param email the email to match against the token's subject.
-     * @return {@code true} if the token is valid, {@code false} otherwise.
-     */
-    public boolean isTokenValid(String token, String email) {
-        final String username = extractAllClaims(token).getSubject();
-        return (username.equals(email) && !isTokenExpired(token));
-    }
-
-    /**
-     * Checks if a JWT has expired.
-     *
-     * @param token the JWT to check.
-     * @return {@code true} if the token has expired, {@code false} otherwise.
+     * Checks if a JWT token is expired.
      */
     private boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+
+    /**
+     * Retrieves the signing key.
+     */
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 }

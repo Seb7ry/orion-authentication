@@ -1,24 +1,23 @@
 package com.unibague.gradework.orionserver.service;
 
-import com.unibague.gradework.orionserver.model.*;
+import com.unibague.gradework.orionserver.model.LoginRequest;
+import com.unibague.gradework.orionserver.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
- * Service class responsible for handling authentication logic.
- * It verifies user credentials, retrieves user details, and generates JWT tokens.
+ * Service for handling authentication logic.
  */
 @Service
-public class AuthService implements IAuthService{
+public class AuthService implements IAuthService {
 
     @Autowired
-    private UserService userService;
+    private RestTemplate restTemplate;  // ✅ Calls the `user-manager` microservice
 
     @Autowired
     private JwtService jwtService;
@@ -26,76 +25,35 @@ public class AuthService implements IAuthService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private final String USER_SERVICE_URL = "http://user-manager/users";
+
     /**
      * Authenticates a user by validating credentials and generating a JWT token.
-     *
-     * @param loginRequest The login request containing the user's email and password.
-     * @return A {@link ResponseEntity} containing an authentication response if successful,
-     * or an error message in case of failure.
      */
     @Override
     public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
-        Optional<User> userOptional = userService.fetchUserByEmail(loginRequest.getEmail());
+        // Step 1: Fetch user from the `user-manager` microservice
+        ResponseEntity<User> response = restTemplate.exchange(
+                USER_SERVICE_URL + "/email?email=" + loginRequest.getEmail(),
+                HttpMethod.GET,
+                null,
+                User.class
+        );
 
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid email or password");
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
 
-        User user = userOptional.get();
+        User user = response.getBody();
 
-        if (!loginRequest.getPassword().equals(user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid email or password");
+        // Step 2: Validate password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
 
-        List<ProgramDTO> programs = userService.fetchUserPrograms(user.getIdUser());
-
-        Object userDTO;
-        if (user instanceof Student student) {
-            userDTO = new StudentDTO(
-                    student.getIdUser(),
-                    student.getFirstName(),
-                    student.getLastName(),
-                    student.getBirthDate(),
-                    student.getPhone(),
-                    student.getEmail(),
-                    student.getImage(),
-                    student.getSex().name(),
-                    student.getRole().getName(),
-                    programs,
-                    String.valueOf(student.getStudentID()),
-                    student.isStatus(),
-                    student.getSemester(),
-                    student.getCategory()
-            );
-        } else if (user instanceof Actor actor) {
-            userDTO = new ActorDTO(
-                    actor.getIdUser(),
-                    actor.getFirstName(),
-                    actor.getLastName(),
-                    actor.getBirthDate(),
-                    actor.getPhone(),
-                    actor.getEmail(),
-                    actor.getImage(),
-                    actor.getSex().name(),
-                    actor.getRole().getName(),
-                    programs,
-                    String.valueOf(actor.getEmployeeId()),
-                    actor.getPosition()
-            );
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("User type not recognized");
-        }
-
+        // Step 3: Generate JWT token
         String token = jwtService.generateToken(user);
 
-        AuthResponse response = AuthResponse.builder()
-                .token(token)
-                .user(userDTO)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().body("{\"token\": \"" + token + "\"}");
     }
 }
