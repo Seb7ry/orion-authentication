@@ -20,8 +20,8 @@ public class GoogleAuthController {
     private UserService userService;
 
     @GetMapping("/callback")
-    public ResponseEntity<?> handleGoogleCallback(@RequestParam String email) {
-        Optional<User> optionalUser = userService.fetchUserByEmail(email);
+    public ResponseEntity<?> googleCallback(@RequestParam String email) {
+        Optional<User> optionalUser = userService.getUserByEmail(email);
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();

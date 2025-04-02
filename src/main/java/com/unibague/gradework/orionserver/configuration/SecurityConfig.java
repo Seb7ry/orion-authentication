@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -60,7 +62,7 @@ public class SecurityConfig {
             }
 
             // Verificar si el usuario ya existe en Mongo (microservicio user)
-            userService.fetchUserByEmail(email)
+            userService.getUserByEmail(email)
                     .ifPresentOrElse(
                             user -> System.out.println("Usuario ya registrado en MongoDB: " + user.getEmail()),
                             () -> System.out.println("Usuario no encontrado en MongoDB, se debe consultar la API externa.")
@@ -68,5 +70,10 @@ public class SecurityConfig {
 
             return oAuth2User;
         };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 }
