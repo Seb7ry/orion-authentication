@@ -71,10 +71,10 @@ public class UserService implements IUserService {
      * Retrieves the list of programs associated with a given user.
      *
      * @param userId The unique identifier of the user.
-     * @return A {@link List} of {@link ProgramDTO} representing the user's programs, or an empty list if an error occurs.
+     * @return A {@link List} of {@link Program} representing the user's programs, or an empty list if an error occurs.
      */
     @Override
-    public List<ProgramDTO> fetchUserPrograms(String userId) {
+    public List<Program> fetchUserPrograms(String userId) {
         try {
             ResponseEntity<List> response = restTemplate
                     .getForEntity(USER_SERVICE_URL + "/" + userId + "/programs", List.class);

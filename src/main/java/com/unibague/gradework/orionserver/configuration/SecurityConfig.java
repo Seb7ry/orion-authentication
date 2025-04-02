@@ -1,120 +1,72 @@
 package com.unibague.gradework.orionserver.configuration;
 
+import com.unibague.gradework.orionserver.model.User;
+import com.unibague.gradework.orionserver.service.UserService;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Security configuration for the application.
- * Configures authentication, authorization, JWT validation, and CORS settings.
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    /**
-     * Configures security settings including OAuth2 login and JWT authentication.
-     *
-     * @param http The HttpSecurity object to configure.
-     * @return The configured SecurityFilterChain.
-     * @throws Exception if an error occurs during configuration.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for API security
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/oauth2/**").permitAll() // Allow authentication routes
-                        .anyRequest().authenticated() // Protect all other routes
+                        .requestMatchers("/login/oauth2/code/google").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2 // Configure OAuth2 Login with Google
-                        .defaultSuccessUrl("http://localhost:5173/dashboard", true) // Redirect after login
-                        .failureUrl("http://localhost:5173/login?error=true")
-                )
-                .logout(logout -> logout
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler()) // Handle logout
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("http://localhost:5173/director/home", true)
                 );
-
         return http.build();
     }
 
-    /**
-     * Handles Google logout redirection.
-     *
-     * @return The configured OidcClientInitiatedLogoutSuccessHandler.
-     */
     @Bean
-    public OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler() {
-        OidcClientInitiatedLogoutSuccessHandler successHandler =
-                new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-        successHandler.setPostLogoutRedirectUri("http://localhost:5173/");
-        return successHandler;
-    }
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService(UserService userService) {
+        return userRequest -> {
+            DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+            OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
-    /**
-     * Configures JWT decoding and validation.
-     *
-     * @return The configured JwtDecoder.
-     */
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        String secret = System.getProperty("JWT_SECRET");
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+            String email = (String) attributes.get("email");
 
-        if (secret == null || secret.length() < 32) {
-            throw new IllegalStateException(" ERROR: JWT_SECRET environment variable is missing or too short. " +
-                    "Ensure it is at least 32 characters long.");
-        }
+            // Validar si el email pertenece a la institución
+            if (!(email.endsWith("@estudiantesunibague.edu.co") || email.endsWith("@unibague.edu.co"))) {
+                throw new RuntimeException("Correo no válido para esta plataforma.");
+            }
 
-        SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        return NimbusJwtDecoder.withSecretKey(secretKey).build();
-    }
+            // Verificar si el usuario ya existe en Mongo (microservicio user)
+            userService.fetchUserByEmail(email)
+                    .ifPresentOrElse(
+                            user -> System.out.println("Usuario ya registrado en MongoDB: " + user.getEmail()),
+                            () -> System.out.println("Usuario no encontrado en MongoDB, se debe consultar la API externa.")
+                    );
 
-    /**
-     * Provides password encoding using BCrypt.
-     *
-     * @return The configured PasswordEncoder.
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * Configures CORS settings.
-     *
-     * @return The configured CorsConfigurationSource.
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+            return oAuth2User;
+        };
     }
 }

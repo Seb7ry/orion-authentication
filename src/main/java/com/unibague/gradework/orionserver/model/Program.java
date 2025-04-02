@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor
-public class ProgramDTO {
+public class Program {
 
     /**
      * The unique identifier of the program.
@@ -22,12 +22,12 @@ public class ProgramDTO {
     private String programName;
 
     /**
-     * Constructs a new {@code ProgramDTO} instance with the specified attributes.
+     * Constructs a new {@code Program} instance with the specified attributes.
      *
      * @param idProgram   The unique identifier of the program.
      * @param programName The name of the academic program.
      */
-    public ProgramDTO(String idProgram, String programName) {
+    public Program(String idProgram, String programName) {
         this.idProgram = idProgram;
         this.programName = programName;
     }

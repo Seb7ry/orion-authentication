@@ -1,6 +1,6 @@
 package com.unibague.gradework.orionserver.service;
 
-import com.unibague.gradework.orionserver.model.ProgramDTO;
+import com.unibague.gradework.orionserver.model.Program;
 import com.unibague.gradework.orionserver.model.User;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public interface IUserService {
      * Retrieves the list of programs associated with a specific user.
      *
      * @param userId The unique identifier of the user.
-     * @return A {@link List} of {@link ProgramDTO} representing the user's associated programs.
+     * @return A {@link List} of {@link Program} representing the user's associated programs.
      */
-    List<ProgramDTO> fetchUserPrograms(String userId);
+    List<Program> fetchUserPrograms(String userId);
 }
