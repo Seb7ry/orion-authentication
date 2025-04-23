@@ -2,6 +2,7 @@ package com.unibague.gradework.orionserver.controller;
 
 import com.unibague.gradework.orionserver.model.LoginRequest;
 import com.unibague.gradework.orionserver.model.User;
+import com.unibague.gradework.orionserver.model.UserLogDTO;
 import com.unibague.gradework.orionserver.service.IAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class AuthController {
         }
 
         try {
-            User user = authService.authenticate(loginRequest);
+            UserLogDTO user = authService.authenticate(loginRequest);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

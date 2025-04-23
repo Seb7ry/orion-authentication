@@ -10,9 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 public class UserService implements IUserService {
 
@@ -25,32 +22,25 @@ public class UserService implements IUserService {
     private static final String USER_SERVICE_URL = "http://localhost:8092/service/user";
 
     @Override
-    public User getUserByEmail(String email) {
+    public UserLogDTO getUserByEmail(String email) {
         try {
             ResponseEntity<String> response = restTemplate
                     .getForEntity(USER_SERVICE_URL + "/auth/email/" + email, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                String responseBody = response.getBody();
-                System.out.println("Response from user service: " + responseBody);
+                String json = response.getBody();
+                JsonNode root = objectMapper.readTree(json);
 
-                JsonNode jsonNode = objectMapper.readTree(responseBody);
-
-                if (!jsonNode.has("role")) {
-                    throw new RuntimeException("No se encontró el rol en la respuesta del usuario.");
-                }
-
-                String role = jsonNode.get("role").get("name").asText();
-
-                if ("STUDENT".equalsIgnoreCase(role)) {
-                    return objectMapper.readValue(responseBody, Student.class);
-                } else if ("ACTOR".equalsIgnoreCase(role)) {
-                    return objectMapper.readValue(responseBody, Actor.class);
+                if (root.has("studentID")) {
+                    return objectMapper.readValue(json, StudentLogDTO.class);
+                } else if (root.has("position")) {
+                    return objectMapper.readValue(json, ActorLogDTO.class);
                 } else {
-                    System.out.println("Unrecognized role: " + role);
+                    return objectMapper.readValue(json, UserLogDTO.class);
                 }
             }
-            throw new RuntimeException("Respuesta vacía o incorrecta al buscar el usuario.");
+
+            throw new RuntimeException("Respuesta vacía al buscar el usuario.");
         } catch (HttpClientErrorException.NotFound e) {
             throw new RuntimeException("Usuario no encontrado con el correo: " + email);
         } catch (Exception e) {

@@ -1,13 +1,14 @@
 package com.unibague.gradework.orionserver.model;
 
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
-@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class Actor extends User {
+@SuperBuilder
+public class ActorLogDTO extends UserLogDTO {
     private String position;
 }
