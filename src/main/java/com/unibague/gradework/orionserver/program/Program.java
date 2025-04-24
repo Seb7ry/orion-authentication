@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.model;
+package com.unibague.gradework.orionserver.program;
 
 import lombok.*;
 
@@ -7,6 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Program {
-    private String idProgram;
+    private String programId;
     private String programName;
 }

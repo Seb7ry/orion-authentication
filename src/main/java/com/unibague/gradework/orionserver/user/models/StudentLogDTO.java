@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.model;
+package com.unibague.gradework.orionserver.user.models;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-public class ActorLogDTO extends UserLogDTO {
-    private String position;
+public class StudentLogDTO extends UserLogDTO {
+    private String studentID;
+    private boolean status;
+    private String semester;
 }

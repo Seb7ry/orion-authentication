@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.model;
+package com.unibague.gradework.orionserver.user.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

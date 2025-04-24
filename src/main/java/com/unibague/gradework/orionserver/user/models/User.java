@@ -1,16 +1,11 @@
-package com.unibague.gradework.orionserver.model;
+package com.unibague.gradework.orionserver.user.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.unibague.gradework.orionserver.enumerator.TypeSex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -31,5 +26,5 @@ public class User {
     private TypeSex sex;
     private String password;
     private Role role;
-    private List<String> programId;
+    private List<String> programs;
 }
