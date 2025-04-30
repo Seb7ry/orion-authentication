@@ -34,7 +34,6 @@ public class ApiMapperService implements IApiMapperService {
             program = programService.createProgram(new Program(null, programName));
         }
 
-// Asegurarte que no sea null el ID
         if (program.getProgramId() == null) {
             throw new RuntimeException("No se pudo obtener el ID del programa para " + programName);
         }
