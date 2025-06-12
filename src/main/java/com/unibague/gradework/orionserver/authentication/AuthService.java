@@ -6,23 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class AuthService implements IAuthService {
 
-    @Autowired
-    private IUserService userService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private IUserService userService;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private UserResponseBuilder userResponseBuilder;
 
     @Override
-    public UserLogDTO authenticate(LoginRequest loginRequest) {
+    public Map<String, Object> authenticate(LoginRequest loginRequest) {
         UserLogDTO user = userService.getUserByEmail(loginRequest.getEmail());
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 
-        return user;
+        return userResponseBuilder.buildUserResponse(user);
     }
 }

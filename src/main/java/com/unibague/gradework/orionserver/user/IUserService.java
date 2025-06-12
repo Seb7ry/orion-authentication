@@ -9,7 +9,6 @@ public interface IUserService {
     UserLogDTO getUserByEmail(String email);
     void createStudent(Student student);
     void createActor(Actor actor);
-
     Role findRoleByName(String roleName);
     Role createRole(Role role);
 }

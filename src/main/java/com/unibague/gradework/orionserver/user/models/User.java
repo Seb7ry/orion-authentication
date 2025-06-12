@@ -8,11 +8,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
-/**
- * Represents a User entity in the system.
- * This class serves as the base entity for various types of users,
- * providing common attributes like name, contact details, and role.
- */
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor

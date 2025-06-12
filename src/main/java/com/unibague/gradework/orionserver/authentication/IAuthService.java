@@ -1,9 +1,9 @@
 package com.unibague.gradework.orionserver.authentication;
 
-import com.unibague.gradework.orionserver.user.models.UserLogDTO;
+import java.util.Map;
 
 
 public interface IAuthService {
 
-    UserLogDTO authenticate(LoginRequest loginRequest);
+    Map<String, Object> authenticate(LoginRequest loginRequest);
 }

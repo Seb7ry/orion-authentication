@@ -24,8 +24,8 @@ public class AuthController {
         }
 
         try {
-            UserLogDTO user = authService.authenticate(loginRequest);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+            Map<String, Object> userData = authService.authenticate(loginRequest);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(userData);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(e.getMessage());
