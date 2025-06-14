@@ -1,6 +1,7 @@
 package com.unibague.gradework.orionserver.configuration;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unibague.gradework.orionserver.api.IApiMapperService;
 import com.unibague.gradework.orionserver.api.IApiService;
 import com.unibague.gradework.orionserver.authentication.UserResponseBuilder;
@@ -21,6 +22,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.io.IOException;
 import java.util.*;
 
 @Configuration
@@ -36,14 +38,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // 👈 habilita CORS correctamente
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/oauth2/code/google", "/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("http://localhost:5173/auth/google/callback", true)
+                        .successHandler((request, response, authentication) -> {
+                            DefaultOAuth2User user = (DefaultOAuth2User) authentication.getPrincipal();
+                            String email = (String) user.getAttributes().get("email");
+
+                            if (email != null && email.endsWith("@estudiantesunibague.edu.co")) {
+                                response.sendRedirect("http://localhost:5173/student/home");
+                            } else {
+                                response.sendRedirect("http://localhost:5173/actor/home");
+                            }
+                        })
                         .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
                 );
 
@@ -86,10 +97,18 @@ public class SecurityConfig {
             UserLogDTO userMongo = userService.getUserByEmail(email);
             Map<String, Object> response = userResponseBuilder.buildUserResponse(userMongo);
 
+            System.out.println(">>> Atributos que se enviarán al frontend (OAuth):");
+            try {
+                new ObjectMapper()
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValue(System.out, response);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             return new DefaultOAuth2User(oAuth2User.getAuthorities(), response, "email");
         };
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

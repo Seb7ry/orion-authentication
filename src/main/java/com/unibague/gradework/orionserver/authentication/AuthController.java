@@ -43,6 +43,4 @@ public class AuthController {
         Map<String, Object> attributes = authentication.getPrincipal().getAttributes();
         return ResponseEntity.ok(attributes);
     }
-
-
 }
