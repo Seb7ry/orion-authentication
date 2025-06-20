@@ -15,6 +15,9 @@ public class AuthService implements IAuthService {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private UserResponseBuilder userResponseBuilder;
 
+    @Autowired private JwtUtil jwtUtil;
+
+
     @Override
     public Map<String, Object> authenticate(LoginRequest loginRequest) {
         UserLogDTO user = userService.getUserByEmail(loginRequest.getEmail());
@@ -23,6 +26,12 @@ public class AuthService implements IAuthService {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 
-        return userResponseBuilder.buildUserResponse(user);
+        Map<String, Object> response = userResponseBuilder.buildUserResponse(user);
+
+        String token = jwtUtil.generateToken(user.getEmail());
+        response.put("token", token);
+
+        return response;
     }
+
 }
