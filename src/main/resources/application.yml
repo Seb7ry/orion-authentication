@@ -1,5 +1,5 @@
 # ===========================================
-# ORION AUTH SERVICE - Simplified Configuration
+# ORION AUTH SERVICE - Corrected Configuration
 # Uses centralized environment variables from .env files
 # ===========================================
 
@@ -49,25 +49,25 @@ jwt:
   private-key-path: ${JWT_PRIVATE_KEY_PATH:./keys/private.pem}
   public-key-path: ${JWT_PUBLIC_KEY_PATH:./keys/public.pem}
 
-# External Service URLs - Uses centralized variables
+# External API URLs - Uses centralized variables
 api:
   student:
     url: ${STUDENT_API_URL}
   actor:
     url: ${ACTOR_API_URL}
 
-# Service URLs for inter-service communication
+# Service URLs for inter-service communication - FIXED
 user:
   service:
-    url: ${USER_SERVICE_URL}
+    url: ${USER_SERVICE_URL:http://localhost:8092/service/user}
 
 role:
   service:
-    url: ${USER_SERVICE_URL}/role
+    url: ${ROLE_SERVICE_URL:http://localhost:8092/service/role}
 
 program:
   service:
-    url: ${PROGRAM_SERVICE_URL}
+    url: ${PROGRAM_SERVICE_URL:http://localhost:8093/service/program}
 
 # CORS Configuration - Uses centralized variables
 cors:
@@ -134,20 +134,18 @@ logging:
     com.unibague.gradework: DEBUG
     org.springframework.security: DEBUG
 
-# Development service URLs (localhost instead of Docker names)
+# Development service URLs - USE LOCAL VARIABLES
 user:
   service:
-    url: http://localhost:8092/service/user
+    url: ${USER_SERVICE_URL_LOCAL:http://localhost:8092/service/user}
+
+role:
+  service:
+    url: ${ROLE_SERVICE_URL_LOCAL:http://localhost:8092/service/role}
 
 program:
   service:
-    url: http://localhost:8093/service/program
-
-# Development database (if needed for local testing)
-# spring:
-#   data:
-#     mongodb:
-#       uri: mongodb://localhost:27017/oriondb_dev
+    url: ${PROGRAM_SERVICE_URL_LOCAL:http://localhost:8093/service/program}
 
 ---
 # ===========================================
@@ -158,15 +156,18 @@ spring:
     activate:
       on-profile: docker
 
-# All Docker configuration comes from environment variables
-# Service URLs use Docker container names
+# Docker service URLs - USE DOCKER CONTAINER NAMES
 user:
   service:
-    url: ${USER_SERVICE_URL}
+    url: ${USER_SERVICE_URL:http://orion-user:8092/service/user}
+
+role:
+  service:
+    url: ${ROLE_SERVICE_URL:http://orion-user:8092/service/role}
 
 program:
   service:
-    url: ${PROGRAM_SERVICE_URL}
+    url: ${PROGRAM_SERVICE_URL:http://orion-program:8093/service/program}
 
 ---
 # ===========================================

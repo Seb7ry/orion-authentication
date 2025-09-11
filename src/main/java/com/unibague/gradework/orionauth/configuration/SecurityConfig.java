@@ -41,7 +41,16 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login/oauth2/code/google", "/auth/login").permitAll()
+                        .requestMatchers(
+                                "/actuator/**",
+                                "/auth/validate",
+                                "/auth/jwks",
+                                "/auth/refresh",
+                                "/auth/logout",
+                                "/auth/health",
+                                "/auth/login",
+                                "/login/oauth2/code/google"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,16 +16,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enhanced JWT utility service with RS256 support
- * Compatible with existing model structure
+ * JWT utility service with RS256 support
+ * Now uses JwtKeyManager for RSA key management
  */
 @Slf4j
 @Component
 public class JwtUtil {
 
-    // Temporal: Usando clave fija hasta implementar JwtKeyManager
-    private final String SECRET = "gradeworksupersecurekeygradeworksupersecurekey";
-    private final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 horas
+    @Autowired
+    private JwtKeyManager keyManager;
 
     @Value("${jwt.issuer:orion-auth}")
     private String issuer;
@@ -40,15 +40,15 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        log.info("JwtUtil initialized - Migration Phase 1");
+        // Initialize RSA keys on startup
+        keyManager.initializeKeys();
+        log.info("JwtUtil initialized with RS256 algorithm");
         log.info("Access token expiration: {} seconds", accessTokenExpiration);
         log.info("Refresh token expiration: {} seconds", refreshTokenExpiration);
-        log.warn("USING TEMPORARY HS256 - WILL MIGRATE TO RS256 IN NEXT STEP");
     }
 
     /**
      * Generate access token with user information and claims
-     * FASE 1: Usar estructura existente, mejorar en FASE 2
      */
     public String generateAccessToken(UserLogDTO user) {
         Map<String, Object> claims = new HashMap<>();
@@ -59,13 +59,13 @@ public class JwtUtil {
         claims.put("name", user.getName());
         claims.put("type", "access");
 
-        // Role information - Usar estructura actual
+        // Role information
         if (user.getRole() != null) {
             claims.put("role", user.getRole().getName());
             claims.put("roleId", user.getRole().getIdRole());
         }
 
-        // Program information - Adaptar a estructura actual
+        // Program information
         if (user.getPrograms() != null && !user.getPrograms().isEmpty()) {
             List<String> programIds = user.getPrograms().stream()
                     .map(program -> program.getProgramId())
@@ -77,15 +77,13 @@ public class JwtUtil {
     }
 
     /**
-     * Generate simple token (compatible con código actual)
+     * Generate simple token (compatible with existing code)
      */
     public String generateToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SignatureAlgorithm.HS256, SECRET.getBytes())
-                .compact();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "simple");
+
+        return createToken(claims, email, accessTokenExpiration * 1000);
     }
 
     /**
@@ -99,8 +97,7 @@ public class JwtUtil {
     }
 
     /**
-     * Create JWT token with specified claims and expiration
-     * FASE 1: HS256 temporal, FASE 2: RS256
+     * Create JWT token with specified claims and expiration using RS256
      */
     private String createToken(Map<String, Object> claims, String subject, long expirationMs) {
         Date now = new Date();
@@ -113,39 +110,43 @@ public class JwtUtil {
                 .setAudience(audience)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
-                .signWith(SignatureAlgorithm.HS256, SECRET.getBytes()) // Temporal HS256
+                .signWith(SignatureAlgorithm.RS256, keyManager.getPrivateKey()) // Now using RS256!
                 .compact();
     }
 
     /**
-     * Validate token (compatible con código actual)
+     * Validate token (compatible with existing code)
      */
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser().setSigningKey(SECRET.getBytes()).parseClaimsJws(token);
+            Jwts.parser()
+                    .setSigningKey(keyManager.getPublicKey())
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
+            log.debug("Token validation failed: {}", e.getMessage());
             return false;
         }
     }
 
     /**
-     * Extract email from token (compatible con código actual)
+     * Extract email from token (compatible with existing code)
      */
     public String extractEmail(String token) {
-        return Jwts.parser().setSigningKey(SECRET.getBytes())
+        return Jwts.parser()
+                .setSigningKey(keyManager.getPublicKey())
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
     /**
-     * Validate token and return claims - NUEVO para gateway
+     * Validate token and return claims - for gateway
      */
     public Claims validateToken(String token) {
         try {
             return Jwts.parser()
-                    .setSigningKey(SECRET.getBytes())
+                    .setSigningKey(keyManager.getPublicKey())
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
@@ -155,7 +156,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract user ID from token - NUEVO
+     * Extract user ID from token
      */
     public String extractUserId(String token) {
         Claims claims = validateToken(token);
@@ -163,7 +164,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract user role from token - NUEVO
+     * Extract user role from token
      */
     public String extractRole(String token) {
         Claims claims = validateToken(token);
@@ -171,7 +172,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract user programs from token - NUEVO
+     * Extract user programs from token
      */
     @SuppressWarnings("unchecked")
     public List<String> extractPrograms(String token) {
@@ -180,7 +181,7 @@ public class JwtUtil {
     }
 
     /**
-     * Check if token is expired - NUEVO
+     * Check if token is expired
      */
     public boolean isTokenExpired(String token) {
         try {
@@ -192,7 +193,7 @@ public class JwtUtil {
     }
 
     /**
-     * Check if token is a refresh token - NUEVO
+     * Check if token is a refresh token
      */
     public boolean isRefreshToken(String token) {
         try {
@@ -204,7 +205,7 @@ public class JwtUtil {
     }
 
     /**
-     * Get all claims from token for validation endpoint - NUEVO
+     * Get all claims from token for validation endpoint
      */
     public Map<String, Object> getAllClaims(String token) {
         Claims claims = validateToken(token);
