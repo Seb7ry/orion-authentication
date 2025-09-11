@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.configuration;
+package com.unibague.gradework.orionauth.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

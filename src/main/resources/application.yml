@@ -1,0 +1,190 @@
+# ===========================================
+# ORION AUTH SERVICE - Simplified Configuration
+# Uses centralized environment variables from .env files
+# ===========================================
+
+server:
+  port: ${AUTH_SERVICE_PORT:8091}
+
+spring:
+  application:
+    name: ${AUTH_SERVICE_NAME:orion-auth}
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # MongoDB Configuration - Uses centralized variables
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+  # Google OAuth2 Configuration - Uses centralized variables
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            scope: email,profile
+        provider:
+          google:
+            token-uri: https://oauth2.googleapis.com/token
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+
+  # Docker Compose (disabled by default)
+  docker:
+    compose:
+      enabled: false
+
+# JWT Configuration - Uses centralized variables
+jwt:
+  algorithm: ${JWT_ALGORITHM:RS256}
+  issuer: ${JWT_ISSUER:orion-auth}
+  audience: ${JWT_AUDIENCE:orion-services}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400}
+  private-key-path: ${JWT_PRIVATE_KEY_PATH:./keys/private.pem}
+  public-key-path: ${JWT_PUBLIC_KEY_PATH:./keys/public.pem}
+
+# External Service URLs - Uses centralized variables
+api:
+  student:
+    url: ${STUDENT_API_URL}
+  actor:
+    url: ${ACTOR_API_URL}
+
+# Service URLs for inter-service communication
+user:
+  service:
+    url: ${USER_SERVICE_URL}
+
+role:
+  service:
+    url: ${USER_SERVICE_URL}/role
+
+program:
+  service:
+    url: ${PROGRAM_SERVICE_URL}
+
+# CORS Configuration - Uses centralized variables
+cors:
+  allowed:
+    origins: ${CORS_ALLOWED_ORIGINS_DEV:${CORS_ALLOWED_ORIGINS_PROD}}
+
+# Management & Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# Application Info - Uses centralized variables
+info:
+  app:
+    name: ${AUTH_SERVICE_NAME:Orion Auth Service}
+    description: Authentication and Authorization for Orion Microservices
+    version: 1.0.0
+    features:
+      - JWT RS256 Authentication
+      - Google OAuth2 Integration
+      - Token Validation
+      - User Registration from External APIs
+
+# Logging Configuration - Uses centralized variables
+logging:
+  level:
+    com.unibague.gradework: ${LOG_LEVEL_AUTH:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
+    org.springframework.web: ${WEB_LOG_LEVEL:WARN}
+    org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL:WARN}
+    root: ${LOGGING_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+
+# Service Discovery (disabled by default)
+eureka:
+  client:
+    enabled: ${EUREKA_CLIENT_ENABLED:false}
+  instance:
+    enabled: ${EUREKA_INSTANCE_ENABLED:false}
+
+---
+# ===========================================
+# DEVELOPMENT PROFILE - Enhanced debugging
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Development-specific settings
+logging:
+  level:
+    com.unibague.gradework: DEBUG
+    org.springframework.security: DEBUG
+
+# Development service URLs (localhost instead of Docker names)
+user:
+  service:
+    url: http://localhost:8092/service/user
+
+program:
+  service:
+    url: http://localhost:8093/service/program
+
+# Development database (if needed for local testing)
+# spring:
+#   data:
+#     mongodb:
+#       uri: mongodb://localhost:27017/oriondb_dev
+
+---
+# ===========================================
+# DOCKER PROFILE - Production ready
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+# All Docker configuration comes from environment variables
+# Service URLs use Docker container names
+user:
+  service:
+    url: ${USER_SERVICE_URL}
+
+program:
+  service:
+    url: ${PROGRAM_SERVICE_URL}
+
+---
+# ===========================================
+# PRODUCTION PROFILE - Optimized for performance
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Production-specific settings
+logging:
+  level:
+    root: WARN
+    com.unibague.gradework: INFO
+    org.springframework.security: WARN
+
+# Production JWT settings
+jwt:
+  access-token-expiration: 1800  # 30 minutes
+  refresh-token-expiration: 604800  # 7 days

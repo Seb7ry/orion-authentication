@@ -1,7 +1,7 @@
-package com.unibague.gradework.orionserver.user.models;
+package com.unibague.gradework.orionauth.user.models;
 
-import com.unibague.gradework.orionserver.enumerator.TypeSex;
-import com.unibague.gradework.orionserver.program.Program;
+import com.unibague.gradework.orionauth.enumerator.TypeSex;
+import com.unibague.gradework.orionauth.program.Program;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,13 +1,13 @@
-package com.unibague.gradework.orionserver.api;
+package com.unibague.gradework.orionauth.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.unibague.gradework.orionserver.enumerator.TypeSex;
-import com.unibague.gradework.orionserver.program.IProgramService;
-import com.unibague.gradework.orionserver.program.Program;
-import com.unibague.gradework.orionserver.user.IUserService;
-import com.unibague.gradework.orionserver.user.models.Actor;
-import com.unibague.gradework.orionserver.user.models.Role;
-import com.unibague.gradework.orionserver.user.models.Student;
+import com.unibague.gradework.orionauth.enumerator.TypeSex;
+import com.unibague.gradework.orionauth.program.IProgramService;
+import com.unibague.gradework.orionauth.program.Program;
+import com.unibague.gradework.orionauth.user.IUserService;
+import com.unibague.gradework.orionauth.user.models.Actor;
+import com.unibague.gradework.orionauth.user.models.Role;
+import com.unibague.gradework.orionauth.user.models.Student;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

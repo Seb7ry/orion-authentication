@@ -1,12 +1,12 @@
-package com.unibague.gradework.orionserver.configuration;
+package com.unibague.gradework.orionauth.configuration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unibague.gradework.orionserver.api.IApiMapperService;
-import com.unibague.gradework.orionserver.api.IApiService;
-import com.unibague.gradework.orionserver.authentication.UserResponseBuilder;
-import com.unibague.gradework.orionserver.user.models.*;
-import com.unibague.gradework.orionserver.user.IUserService;
+import com.unibague.gradework.orionauth.api.IApiMapperService;
+import com.unibague.gradework.orionauth.api.IApiService;
+import com.unibague.gradework.orionauth.authentication.UserResponseBuilder;
+import com.unibague.gradework.orionauth.user.models.*;
+import com.unibague.gradework.orionauth.user.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.api;
+package com.unibague.gradework.orionauth.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

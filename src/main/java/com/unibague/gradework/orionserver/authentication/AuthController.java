@@ -1,6 +1,5 @@
-package com.unibague.gradework.orionserver.authentication;
+package com.unibague.gradework.orionauth.authentication;
 
-import com.unibague.gradework.orionserver.user.models.UserLogDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

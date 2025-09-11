@@ -1,8 +1,8 @@
-package com.unibague.gradework.orionserver.api;
+package com.unibague.gradework.orionauth.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.unibague.gradework.orionserver.user.models.Actor;
-import com.unibague.gradework.orionserver.user.models.Student;
+import com.unibague.gradework.orionauth.user.models.Actor;
+import com.unibague.gradework.orionauth.user.models.Student;
 
 public interface IApiMapperService {
     Student toStudent(JsonNode studentNode, String imageUrl);

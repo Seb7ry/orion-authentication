@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.user.models;
+package com.unibague.gradework.orionauth.user.models;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;

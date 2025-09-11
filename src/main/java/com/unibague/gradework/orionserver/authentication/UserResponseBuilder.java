@@ -1,7 +1,7 @@
-package com.unibague.gradework.orionserver.authentication;
+package com.unibague.gradework.orionauth.authentication;
 
-import com.unibague.gradework.orionserver.program.Program;
-import com.unibague.gradework.orionserver.user.models.*;
+import com.unibague.gradework.orionauth.program.Program;
+import com.unibague.gradework.orionauth.user.models.*;
 import org.springframework.stereotype.Component;
 
 import java.util.*;

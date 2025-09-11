@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.program;
+package com.unibague.gradework.orionauth.program;
 
 public interface IProgramService {
     Program getProgramByName(String programName);

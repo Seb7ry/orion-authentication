@@ -1,4 +1,4 @@
-package com.unibague.gradework.orionserver.authentication;
+package com.unibague.gradework.orionauth.authentication;
 
 import lombok.Data;
 
