@@ -46,21 +46,14 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler((request, response, authentication) -> {
-                            DefaultOAuth2User user = (DefaultOAuth2User) authentication.getPrincipal();
-                            String email = (String) user.getAttributes().get("email");
-
-                            if (email != null && email.endsWith("@estudiantesunibague.edu.co")) {
-                                response.sendRedirect("http://localhost:5173/student/home");
-                            } else {
-                                response.sendRedirect("http://localhost:5173/actor/home");
-                            }
+                            // Redirigir siempre a Vue con el flag para que consulte /auth/me
+                            response.sendRedirect("http://localhost:5173/oauth-loading");
                         })
                         .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
                 );
 
         return http.build();
     }
-
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
         return userRequest -> {
