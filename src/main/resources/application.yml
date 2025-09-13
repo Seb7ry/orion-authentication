@@ -1,6 +1,6 @@
 # ===========================================
-# ORION AUTH SERVICE - Corrected Configuration
-# Uses centralized environment variables from .env files
+# ORION AUTH SERVICE - Gateway Integration
+# Auth Service se comunica a través del Gateway
 # ===========================================
 
 server:
@@ -13,12 +13,12 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  # MongoDB Configuration - Uses centralized variables
+  # MongoDB Configuration
   data:
     mongodb:
       uri: ${MONGODB_URI}
 
-  # Google OAuth2 Configuration - Uses centralized variables
+  # Google OAuth2 Configuration
   security:
     oauth2:
       client:
@@ -28,51 +28,51 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: ${GOOGLE_REDIRECT_URI}
             scope: email,profile
-        provider:
-          google:
-            token-uri: https://oauth2.googleapis.com/token
-            authorization-uri: https://accounts.google.com/o/oauth2/auth
-            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
 
-  # Docker Compose (disabled by default)
-  docker:
-    compose:
-      enabled: false
-
-# JWT Configuration - Uses centralized variables
+# JWT Configuration
 jwt:
   algorithm: ${JWT_ALGORITHM:RS256}
   issuer: ${JWT_ISSUER:orion-auth}
   audience: ${JWT_AUDIENCE:orion-services}
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400}
-  private-key-path: ${JWT_PRIVATE_KEY_PATH:./keys/private.pem}
-  public-key-path: ${JWT_PUBLIC_KEY_PATH:./keys/public.pem}
 
-# External API URLs - Uses centralized variables
+# External API URLs (no cambian - van directo)
 api:
   student:
     url: ${STUDENT_API_URL}
   actor:
     url: ${ACTOR_API_URL}
 
-# Service URLs for inter-service communication - FIXED
+# Service URLs - AHORA VAN AL GATEWAY
 user:
   service:
-    url: ${USER_SERVICE_URL:http://localhost:8092/service/user}
+    url: ${USER_SERVICE_URL:http://localhost:8080/api/users}
 
 role:
   service:
-    url: ${ROLE_SERVICE_URL:http://localhost:8092/service/role}
+    url: ${ROLE_SERVICE_URL:http://localhost:8080/api/roles}
 
 program:
   service:
-    url: ${PROGRAM_SERVICE_URL:http://localhost:8093/service/program}
+    url: ${PROGRAM_SERVICE_URL:http://localhost:8080/api/programs}
 
-# CORS Configuration - Uses centralized variables
-cors:
-  allowed:
-    origins: ${CORS_ALLOWED_ORIGINS_DEV:${CORS_ALLOWED_ORIGINS_PROD}}
+# Gateway configuration
+gateway:
+  url: ${GATEWAY_URL:http://localhost:8080}
+  service:
+    token: ${GATEWAY_SERVICE_TOKEN:auth-service-token-secure-2025}
+
+# Logging Configuration - Debug para troubleshooting
+logging:
+  level:
+    com.unibague.gradework: ${LOG_LEVEL_AUTH:DEBUG}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:DEBUG}
+    org.springframework.web: ${WEB_LOG_LEVEL:INFO}
+    org.springframework.web.client: DEBUG
+    root: ${LOGGING_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
 
 # Management & Monitoring
 management:
@@ -80,112 +80,28 @@ management:
     web:
       exposure:
         include: health,info,metrics,env
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: always
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
-# Application Info - Uses centralized variables
-info:
-  app:
-    name: ${AUTH_SERVICE_NAME:Orion Auth Service}
-    description: Authentication and Authorization for Orion Microservices
-    version: 1.0.0
-    features:
-      - JWT RS256 Authentication
-      - Google OAuth2 Integration
-      - Token Validation
-      - User Registration from External APIs
-
-# Logging Configuration - Uses centralized variables
-logging:
-  level:
-    com.unibague.gradework: ${LOG_LEVEL_AUTH:INFO}
-    org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
-    org.springframework.web: ${WEB_LOG_LEVEL:WARN}
-    org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL:WARN}
-    root: ${LOGGING_LEVEL:INFO}
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
-
-# Service Discovery (disabled by default)
-eureka:
-  client:
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-  instance:
-    enabled: ${EUREKA_INSTANCE_ENABLED:false}
 
 ---
 # ===========================================
-# DEVELOPMENT PROFILE - Enhanced debugging
-# ===========================================
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-# Development-specific settings
-logging:
-  level:
-    com.unibague.gradework: DEBUG
-    org.springframework.security: DEBUG
-
-# Development service URLs - USE LOCAL VARIABLES
-user:
-  service:
-    url: ${USER_SERVICE_URL_LOCAL:http://localhost:8092/service/user}
-
-role:
-  service:
-    url: ${ROLE_SERVICE_URL_LOCAL:http://localhost:8092/service/role}
-
-program:
-  service:
-    url: ${PROGRAM_SERVICE_URL_LOCAL:http://localhost:8093/service/program}
-
----
-# ===========================================
-# DOCKER PROFILE - Production ready
+# DOCKER PROFILE
 # ===========================================
 spring:
   config:
     activate:
       on-profile: docker
 
-# Docker service URLs - USE DOCKER CONTAINER NAMES
+# Docker URLs - Auth Service sigue usando Gateway
 user:
   service:
-    url: ${USER_SERVICE_URL:http://orion-user:8092/service/user}
+    url: http://orion-gateway:8080/api/users
 
 role:
   service:
-    url: ${ROLE_SERVICE_URL:http://orion-user:8092/service/role}
+    url: http://orion-gateway:8080/api/roles
 
 program:
   service:
-    url: ${PROGRAM_SERVICE_URL:http://orion-program:8093/service/program}
+    url: http://orion-gateway:8080/api/programs
 
----
-# ===========================================
-# PRODUCTION PROFILE - Optimized for performance
-# ===========================================
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-# Production-specific settings
-logging:
-  level:
-    root: WARN
-    com.unibague.gradework: INFO
-    org.springframework.security: WARN
-
-# Production JWT settings
-jwt:
-  access-token-expiration: 1800  # 30 minutes
-  refresh-token-expiration: 604800  # 7 days
+gateway:
+  url: http://orion-gateway:8080
