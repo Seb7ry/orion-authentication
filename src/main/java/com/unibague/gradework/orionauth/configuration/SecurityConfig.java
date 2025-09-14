@@ -49,6 +49,8 @@ public class SecurityConfig {
                                 "/auth/logout",
                                 "/auth/health",
                                 "/auth/login",
+                                "/auth/utils/**",        // ← Utils endpoints
+                                "/auth/debug/**",        // ← DEBUG ENDPOINTS PÚBLICOS
                                 "/login/oauth2/code/google"
                         ).permitAll()
                         .anyRequest().authenticated()
@@ -63,6 +65,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
         return userRequest -> {
@@ -116,5 +119,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
