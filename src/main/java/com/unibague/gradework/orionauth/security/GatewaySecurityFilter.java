@@ -31,10 +31,13 @@ public class GatewaySecurityFilter implements Filter {
     private static final String[] PUBLIC_PATHS = {
             "/actuator/health",
             "/health",
-            "/auth/login",        // ← Login endpoint
-            "/auth/validate",     // ← Validation endpoint
-            "/auth/jwks",         // ← JWKS endpoint
-            "/auth/utils"         // ← Utils endpoints (REMOVE IN PRODUCTION)
+            "/auth/login",
+            "/auth/validate",
+            "/auth/jwks",
+            "/auth/utils",
+            "/auth/debug/**",     // ← Añadir
+            "/health-simple",     // ← Añadir
+            "/test-gateway-simple" // ← Añadir
     };
 
     @Override
