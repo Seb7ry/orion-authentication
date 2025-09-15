@@ -22,6 +22,8 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.*;
 
@@ -49,16 +51,23 @@ public class SecurityConfig {
                                 "/auth/logout",
                                 "/auth/health",
                                 "/auth/login",
-                                "/auth/utils/**",        // ← Utils endpoints
-                                "/auth/debug/**",        // ← DEBUG ENDPOINTS PÚBLICOS
-                                "/login/oauth2/code/google"
+                                "/auth/utils/**",
+                                "/auth/debug/**",
+                                "/auth/me",
+                                "/oauth2/authorization/**",
+                                "/login/oauth2/code/**",
+                                "/health-simple",
+                                "/test-gateway-simple"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler((request, response, authentication) -> {
-                            // Redirigir siempre a Vue con el flag para que consulte /auth/me
                             response.sendRedirect("http://localhost:5173/oauth-loading");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            String errorMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
+                            response.sendRedirect("http://localhost:5173/login?error=" + errorMessage);
                         })
                         .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
                 );
