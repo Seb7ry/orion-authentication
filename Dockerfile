@@ -51,15 +51,15 @@ RUN chown -R orion:orion /app
 USER orion
 
 # Expose port
-EXPOSE 8091
+EXPOSE 8090
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8091/actuator/health || exit 1
+    CMD curl -f http://localhost:8090/actuator/health || exit 1
 
 # Environment variables with defaults
 ENV SPRING_PROFILES_ACTIVE=docker
-ENV SERVER_PORT=8091
+ENV SERVER_PORT=8090
 
 # Run application
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
