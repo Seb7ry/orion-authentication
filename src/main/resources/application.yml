@@ -1,10 +1,10 @@
 # ===========================================
-# ORION AUTH SERVICE - Gateway Integration
-# Auth Service se comunica a través del Gateway
+# ORION AUTH SERVICE - application.yml (dev/docker)
 # ===========================================
 
 server:
   port: ${AUTH_SERVICE_PORT:8091}
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -13,7 +13,7 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  # MongoDB Configuration
+  # MongoDB Configuration - Uses centralized variables
   data:
     mongodb:
       uri: ${MONGODB_URI}
@@ -29,79 +29,92 @@ spring:
             redirect-uri: ${GOOGLE_REDIRECT_URI}
             scope: email,profile
 
-# JWT Configuration
+  # Docker Compose (disabled by default)
+  docker:
+    compose:
+      enabled: false
+
+# JWT Configuration - Uses centralized variables
 jwt:
   algorithm: ${JWT_ALGORITHM:RS256}
   issuer: ${JWT_ISSUER:orion-auth}
   audience: ${JWT_AUDIENCE:orion-services}
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400}
+  private-key-path: ${JWT_PRIVATE_KEY_PATH:./keys/private.pem}
+  public-key-path: ${JWT_PUBLIC_KEY_PATH:./keys/public.pem}
 
-# External API URLs (no cambian - van directo)
+# External APIs Configuration (Direct)
 api:
   student:
     url: ${STUDENT_API_URL}
   actor:
     url: ${ACTOR_API_URL}
 
-# Service URLs - AHORA VAN AL GATEWAY
-user:
-  service:
-    url: ${USER_SERVICE_URL:http://localhost:8080/api/users}
+# External Services Configuration - All from .env
+orion:
+  services:
+    user-service-url: ${USER_SERVICE_URL}
+    role-service-url: ${ROLE_SERVICE_URL}
+    program-service-url: ${PROGRAM_SERVICE_URL}
+    gateway-url: ${GATEWAY_URL}
+    gateway-token: ${GATEWAY_SERVICE_TOKEN}
+    connection-timeout: ${SERVICE_CONNECTION_TIMEOUT:5s}
+    read-timeout: ${SERVICE_READ_TIMEOUT:10s}
+    max-retries: ${SERVICE_MAX_RETRIES:3}
+    retry-delay: ${SERVICE_RETRY_DELAY:500ms}
 
-role:
-  service:
-    url: ${ROLE_SERVICE_URL:http://localhost:8080/api/roles}
-
-program:
-  service:
-    url: ${PROGRAM_SERVICE_URL:http://localhost:8080/api/programs}
-
-# Gateway configuration
-gateway:
-  url: ${GATEWAY_URL:http://localhost:8080}
-  service:
-    token: ${GATEWAY_SERVICE_TOKEN:auth-service-token-secure-2025}
-
-# Logging Configuration - Debug para troubleshooting
+# Logging Configuration - Uses centralized variables
 logging:
   level:
-    com.unibague.gradework: ${LOG_LEVEL_AUTH:DEBUG}
-    org.springframework.security: ${SECURITY_LOG_LEVEL:DEBUG}
+    com.unibague.gradework: ${LOG_LEVEL_AUTH:INFO}
     org.springframework.web: ${WEB_LOG_LEVEL:INFO}
-    org.springframework.web.client: DEBUG
+    org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
+    org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL:INFO}
     root: ${LOGGING_LEVEL:INFO}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
-
-# Management & Monitoring
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,env
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 ---
 # ===========================================
-# DOCKER PROFILE
+# DEVELOPMENT PROFILE - Minimal overrides
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Development-specific settings
+logging:
+  level:
+    com.unibague.gradework: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web.client: DEBUG
+
+---
+# ===========================================
+# DOCKER PROFILE - Minimal overrides
 # ===========================================
 spring:
   config:
     activate:
       on-profile: docker
 
-# Docker URLs - Auth Service sigue usando Gateway
-user:
-  service:
-    url: http://orion-gateway:8080/api/users
+# All Docker configuration comes from environment variables
+# No hardcoded values here
 
-role:
-  service:
-    url: http://orion-gateway:8080/api/roles
+---
+# ===========================================
+# PRODUCTION PROFILE - Minimal overrides
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: prod
 
-program:
-  service:
-    url: http://orion-gateway:8080/api/programs
-
-gateway:
-  url: http://orion-gateway:8080
+# Production-specific settings
+logging:
+  level:
+    root: WARN
+    com.unibague.gradework: INFO
+    org.springframework.security: WARN

@@ -44,7 +44,7 @@ public class RestTemplateConfig {
                 log.debug("📋 Headers added:");
                 log.debug("   X-Service-Request: true");
                 log.debug("   X-Service-Name: orion-auth");
-                log.debug("   X-Service-Token: {}...", serviceToken != null ? serviceToken.substring(0, 10) : "null");
+                log.debug("   X-Service-Token: {}...", serviceToken != null ? serviceToken.substring(0, Math.min(10, serviceToken.length())) : "null");
                 log.debug("   User-Agent: orion-auth-service/1.0.0");
                 log.debug("   X-Internal-Request: true");
 
