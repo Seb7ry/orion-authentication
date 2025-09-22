@@ -13,7 +13,7 @@ import java.util.List;
 @Configuration
 public class RestTemplateConfig {
 
-    @Value("${gateway.service.token:auth-service-token-secure-2025}")
+    @Value("${GATEWAY_SERVICE_TOKEN:auth-service-token-secure-2025}")
     private String serviceToken;
 
     @Bean

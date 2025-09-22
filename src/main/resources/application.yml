@@ -72,6 +72,12 @@ logging:
     org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
     org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL:INFO}
     root: ${LOGGING_LEVEL:INFO}
+
+    org.apache.maven: WARN
+    org.eclipse.aether: WARN
+    org.apache.maven.cli.transfer: WARN
+    org.eclipse.aether.transfer: WARN
+    org.springframework.boot.loader: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
@@ -91,6 +97,10 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web.client: DEBUG
 
+    org.apache.maven: WARN
+    org.eclipse.aether: WARN
+    org.apache.maven.cli.transfer: WARN
+    org.eclipse.aether.transfer: WARN
 ---
 # ===========================================
 # DOCKER PROFILE - Minimal overrides

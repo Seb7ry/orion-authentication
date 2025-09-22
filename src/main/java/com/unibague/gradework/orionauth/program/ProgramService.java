@@ -38,9 +38,7 @@ public class ProgramService implements IProgramService {
     @Override
     public Program createProgram(Program program) {
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Program> request = new HttpEntity<>(program, headers);
+            HttpEntity<Program> request = new HttpEntity<>(program);
 
             log.info("Creando programa: ", program.getProgramName());
             ResponseEntity<Program> response = restTemplate.postForEntity(programServiceUrl, request, Program.class);
